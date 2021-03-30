@@ -1,37 +1,37 @@
-// creamos la signing authority
+# creamos la signing authority
 openssl genrsa -out signing_key_private.pem 2048
 
 openssl rsa -in signing_key_private.pem -out signing_key_public.pem -pubout
 
 tpm2_loadexternal -G rsa -C o -u signing_key_public.pem -c signing_key.ctx -n signing_key.name
 
-//creamos la politica de autorizacion
+# creamos la politica de autorizacion
 tpm2_startauthsession -S session.ctx
 
 tpm2_policyauthorize -S session.ctx -L authorized.policy -n signing_key.name
 
 tpm2_flushcontext session.ctx
 
-//get the reset value in a variable $reset
+# get the reset value in a variable $reset
 reset=$(tpm2_readclock | grep  reset_count: | grep -o  '[0-9]*')
 
-// creamos policy digest
+# creamos policy digest
 tpm2_startauthsession -S session.ctx
 tpm2_policycountertimer -S session.ctx resets=$reset -L reset_cout.policy
 tpm2_flushcontext session.ctx
  
-//firmamos la politica
-openssl dgst -sha256 -sign signing_key_private.pem -out reset.signature reset_cout.policy
+# firmamos la politica
+openssl dgst -sha256 -sign signing_key_private.pem -out reset_cout.signature reset_cout.policy
 
-//creamos prim y secert to esconder
+# creamos prim y secert to esconder
 tpm2_createprimary -C o -g sha256 -G rsa -c prim.ctx
 
 tpm2_create -g sha256 -u sealing_pubkey.pub -r sealing_prikey.pub -i- -C prim.ctx -L authorized.policy <<< "secret to seal"
 
 tpm2_load -C prim.ctx -u sealing_pubkey.pub -r sealing_prikey.pub -c sealing_key.ctx
 
-//verificamos la sesion 
-tpm2_verifysignature -c signing_key.ctx -g sha256 -m pcr.policy -s pcr.signature -t verification.tkt -f rsassa
+# verificamos la sesion 
+tpm2_verifysignature -c signing_key.ctx -g sha256 -m reset_cout.policy -s reset_cout.signature -t verification.tkt -f rsassa
 
 tpm2_startauthsession \--policy-session -S session.ctx
 
