@@ -42,3 +42,26 @@ tpm2_policyauthorize -S session.ctx -L authorized.policy -i reset_cout.policy -n
 tpm2_unseal -p"session:session.ctx" -c sealing_key.ctx
 
 tpm2_flushcontext session.ctx
+
+
+
+# con firma 
+tpm2_createprimary -C o -g sha256 -G rsa -c prim.ctx
+
+tpm2_create -G rsa -u pubkey.pub -r prikey.pub -L authorized.policy -c rsa.ctx -C prim.ctx
+
+echo "my message" > message.dat
+
+# verificamos la sesion 
+
+tpm2_startauthsession \--policy-session -S session.ctx
+
+tpm2_policycountertimer -S session.ctx resets=$reset
+
+tpm2_policyauthorize -S session.ctx -L authorized.policy -i reset_cout.policy -n signing_key.name -t verification.tkt
+
+tpm2_sign -p"session:session.ctx" -c rsa.ctx -g sha256 -o sig.rssa message.dat
+
+tpm2_verifysignature -c rsa.ctx -g sha256 -s sig.rssa -m message.dat
+
+tpm2_flushcontext session.ctx
