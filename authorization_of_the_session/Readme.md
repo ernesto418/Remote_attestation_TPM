@@ -17,7 +17,9 @@ reset=$(tpm2_readclock | grep  reset_count: | grep -o  '[0-9]*')
 
 # creamos policy digest
 tpm2_startauthsession -S session.ctx
+
 tpm2_policycountertimer -S session.ctx resets=$reset -L reset_cout.policy
+
 tpm2_flushcontext session.ctx
  
 # firmamos la politica
