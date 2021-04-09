@@ -73,4 +73,4 @@ tpm2_flushcontext session.ctx
 uint32: operandB
 digest = sha1(operandB | 0010 | 0002)
 
-digest = sha1(00000000000000000000000000000000000000000000016d | digest)
+digest = sha1(000000000000000000000000000000000000000000 | 00016d | digest)
