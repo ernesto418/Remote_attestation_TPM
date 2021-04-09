@@ -67,3 +67,10 @@ tpm2_sign -p"session:session.ctx" -c rsa.ctx -g sha256 -o sig.rssa message.dat
 tpm2_verifysignature -c rsa.ctx -g sha256 -s sig.rssa -m message.dat
 
 tpm2_flushcontext session.ctx
+
+
+# Creamos el digest de la politica
+uint32: operandB
+digest = sha1(operandB | 0010 | 0002)
+
+digest = sha1(00000000000000000000000000000000000000000000016d | digest)
