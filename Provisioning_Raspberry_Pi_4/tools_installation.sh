@@ -50,6 +50,7 @@ cd ..
 
 ##TPM providing
 echo "Creating keys"
+cd remote_attestation_tools
 sudo chmod a+rw /dev/tpm0
 sudo chmod a+rw /dev/tpmrm0
 tpm2_createek -G rsa -u ek.pub -c ek.ctx
