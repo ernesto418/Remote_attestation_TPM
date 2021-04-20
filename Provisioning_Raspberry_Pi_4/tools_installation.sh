@@ -16,7 +16,7 @@ uuid-dev pandoc libconfig-dev libjson-c-dev libcurl4-gnutls-dev
 set +e
 mkdir /home/pi/tools
 set -e
-cp -r remote_attestation-tools /home/pi/tools/remote_attestation_tools
+cp -r remote_attestation_tools /home/pi/tools/remote_attestation_tools
 cd /home/pi/tools/remote_attestation_tools
 make
 cd ..
