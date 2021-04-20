@@ -13,7 +13,9 @@ gcc libtool automake libssl-dev uthash-dev autoconf doxygen libgcrypt-dev libjso
 uuid-dev pandoc libconfig-dev libjson-c-dev libcurl4-gnutls-dev
 
 ##Remote_attestation-tools
+set +e
 mkdir /home/pi/tools
+set -e
 cp -r remote_attestation-tools /home/pi/tools/remote_attestation-tools
 cd /home/pi/tools/remote_attestation-tools
 make
@@ -21,7 +23,9 @@ cd ..
 
 
 ##TPM2-tss
+set +e
 git clone https://github.com/tpm2-software/tpm2-tss.git
+set -e
 cd tpm2-tss
 #git checkout 2.4.0
 ./bootstrap
@@ -32,7 +36,9 @@ sudo ldconfig
 cd ..
 
 ##TPM2-tools
+set +e
 git clone https://github.com/tpm2-software/tpm2-tools.git
+set -e
 cd tpm2-tools
 #git checkout 4.2
 ./bootstrap
