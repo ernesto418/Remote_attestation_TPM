@@ -2,8 +2,11 @@
 set -e
 #Applying parches
 sudo cp parch/config.txt /boot/config.txt
+echo "
+" >> eer
 sudo cp parch/cmdline.txt /boot/cmdline.txt
 
+sed -i "s/^./ jo/" /boot/cmdline.txt
 
 #Downloading tools
 
