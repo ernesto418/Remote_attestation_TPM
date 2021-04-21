@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -e
 #Applying parches
-sudo cp parch/config.txt /boot/config.txt
-echo "
-" >> eer
+sudo echo "dtparam=spi=on
+dtoverlay=tpm-slb9670
+" >> /boot/config.txt
+cat /boot/cmdline.txt | tr --delete '\n' > middle
+echo -n "ee" >> middle
+sudo cp middle /boot/cmdline.txt
 sudo cp parch/cmdline.txt /boot/cmdline.txt
 
 sed -i "s/^./ jo/" /boot/cmdline.txt
