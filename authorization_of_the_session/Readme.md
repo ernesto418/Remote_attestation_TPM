@@ -71,6 +71,7 @@ tpm2_flushcontext session.ctx
 
 # Creamos el digest tpm2_policycountertimer
 uint32: operandB
+
 digest = sha1(operandB | 0010 | 0002)
 
 digest = sha1(0000000000000000000000000000000000000000 | 0000016d | digest)
