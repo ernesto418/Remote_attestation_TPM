@@ -27,7 +27,7 @@ set +e
 git clone https://github.com/tpm2-software/tpm2-tss.git
 set -e
 cd tpm2-tss
-#git checkout 2.4.0
+git checkout 2.4.0
 ./bootstrap
 ./configure
 make -j$(nproc)
