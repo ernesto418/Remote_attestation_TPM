@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -e
 #Applying parches
+
 sudo echo "dtparam=spi=on
 dtoverlay=tpm-slb9670
 " >> /boot/config.txt
-cat /boot/cmdline.txt | tr --delete '\n' > middle
-echo -n "ee" >> middle
-sudo cp middle /boot/cmdline.txt
-sudo cp parch/cmdline.txt /boot/cmdline.txt
 
-sed -i "s/^./ jo/" /boot/cmdline.txt
+cat /boot/cmdline.txt | tr --delete '\n' > middle
+echo -n  " ima_policy=tcb" >> middle
+sudo cp middle /boot/cmdline.txt
+sudo rm middle
 
 #Downloading tools
 
@@ -66,9 +66,7 @@ tpm2_evictcontrol -C o -c ak.ctx 0x81000002
 #If error in this step, try
     #code: tpm2_clear -c p
     #and execute this program again
-    #Warning: you are clearing the TPM platfomr hierarchy!
+    #Warning: you are clearing the TPM platform hierarchy!
 echo "Keys created"
 
 reboot
-
-
