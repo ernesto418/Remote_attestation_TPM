@@ -71,13 +71,13 @@ tpm2_flushcontext session.ctx
 
 # Creamos el digest tpm2_policycountertimer
 uint32: operandB
-
-digest = sha1(operandB | 0010 | 0002)
+tpm2_policycountertimer -S  session.ctx -L policy.countertimer --eq resets=45
+digest = sha1(operandB | 0010 | 0000)
 
 digest = sha1(0000000000000000000000000000000000000000 | 0000016d | digest)
 
-primer digest 0000002d00100002
+primer digest 0000002d00100000
 
-segundo diges 00000000000000000000000000000000000000000000000000000000000000000000016dc328eaf3eb68855e6fd954e81d97ca71c7cceb5694ea8815a1c8872b5f5c1ad1
+segundo diges 00000000000000000000000000000000000000000000000000000000000000000000016dab1a225f806b7f50f21f2a687752c14b69ea449e33a90f7d12324332df630e9c
 
 me quedo sin tiempo, averigua tu el resto ernesto, buena suerteeee
