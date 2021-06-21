@@ -51,9 +51,9 @@ sudo umount mnt/fat32
 sudo umount mnt/ext4
 
 #Adding parchs
-sudo cp ../parch/clk-bcm2835.c drivers/clk/bcm/clk-bcm2835.c
-sudo cp ../parch/.config .config
-sudo cp ../parch/ima_policy.c security/integrity/ima/ima_policy.c
+sudo cp ../parch_64/clk-bcm2835.c drivers/clk/bcm/clk-bcm2835.c
+sudo cp ../parch_64/.config .config
+sudo cp ../parch_64/ima_policy.c security/integrity/ima/ima_policy.c
 
 #Second installation
 make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image modules dtbs
