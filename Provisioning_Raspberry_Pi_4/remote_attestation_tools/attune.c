@@ -52,7 +52,7 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
     printf("element size error!");
   }
   {
-    json_object *json, *status, *PuK;
+    json_object *json, *status, *qualification;
     enum json_tokener_error jerr = json_tokener_error_depth;
 
     json = json_tokener_parse_verbose((char *) ptr, &jerr);
@@ -67,18 +67,9 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
     status = json_object_object_get(json, "status");
     if (status != NULL) {
       if (!strcmp(json_object_get_string(status), "ok")) {
-        PuK = json_object_object_get(json, "data");
-        if (PuK != NULL && json_object_is_type(PuK, json_type_string)) {
-          const char *str = json_object_get_string(PuK);
-          if (*str != '\0')
-              printf("Server Public key: %s\n", str);
-                FILE *fd = NULL;
-                if ((fd = fopen("./PuK.pem", "wb")) != NULL) {
-                  fwrite(str, strlen(str), 1, fd);
-                  fclose(fd);
-                  printf("written to ./PuK.pem\n");
-          }
-        }
+        printf("Status: ok\n");
+      } else {
+        printf("%s\n", json_object_to_json_string(json));
       }
     }
 
