@@ -1,2 +1,2 @@
-# Remotte_attestation_TPM
+# Remote_attestation_TPM
 ## Still in progress
