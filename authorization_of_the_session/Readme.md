@@ -96,5 +96,7 @@ digest = sha256(0000000000000000000000000000000000000000000000000000000000000000
 me quedo sin tiempo, espero que la explicacion este bien, aqui unas ubicaciones que te pueden venir bien:
 
 policymaker.c
-policy coutertimer.tst,
+
+policycoutertimer.tst,
+
 ibmtss1.6.0\utils\regtests\testpolicy.sh
