@@ -72,13 +72,29 @@ tpm2_flushcontext session.ctx
 # Creamos el digest tpm2_policycountertimer
 uint32: operandB
 tpm2_policycountertimer -S  session.ctx -L policy.countertimer --eq resets=45
+## IBM Examples:
+Here we have operandB = time is 64 bits at offset 0 operandB = 0000000000000000:
+Then we have kind of variable to measure, the time, Var_meas = 0000
+Then we have the operation to compare,operation valriable OP_var = 0002
 
-digest = sha1(operandB | 0010 | 0000)
+digest_1 = sha1(operandB | Var_meas | OP_var)
+
+The final digest is:
 
 digest = sha1(0000000000000000000000000000000000000000 | 0000016d | digest)
 
+## Ernesto Examples:
+
+We compare reser with value 45, and the comparation operation is "=", and we use sha256. T(he sice of reset is smoller thaht the size of time)
+
+digest_1 = sha256(operandB | Var_meas | OP_var)
 primer digest 0000002d00100000
 
-segundo diges 00000000000000000000000000000000000000000000000000000000000000000000016dab1a225f806b7f50f21f2a687752c14b69ea449e33a90f7d12324332df630e9c
+digest = sha256(0000000000000000000000000000000000000000000000000000000000000000 | 0000016d | digest)
 
-me quedo sin tiempo, averigua tu el resto ernesto, buena suerteeee
+
+me quedo sin tiempo, espero que la explicacion este bien, aqui unas ubicaciones que te pueden venir bien:
+
+policymaker.c
+policy coutertimer.tst,
+ibmtss1.6.0\utils\regtests\testpolicy.sh
