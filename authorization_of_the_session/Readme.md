@@ -71,10 +71,14 @@ tpm2_flushcontext session.ctx
 
 # Creamos el digest tpm2_policycountertimer
 uint32: operandB
+
 tpm2_policycountertimer -S  session.ctx -L policy.countertimer --eq resets=45
+
 ## IBM Examples:
 Here we have operandB = time is 64 bits at offset 0 operandB = 0000000000000000:
+
 Then we have kind of variable to measure, the time, Var_meas = 0000
+
 Then we have the operation to compare,operation valriable OP_var = 0002
 
 digest_1 = sha1(operandB | Var_meas | OP_var)
