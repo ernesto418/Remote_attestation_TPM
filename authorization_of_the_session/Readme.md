@@ -104,3 +104,25 @@ policymaker.c
 policycoutertimer.tst,
 
 ibmtss1.6.0\utils\regtests\testpolicy.sh
+
+
+# Creamos el digest tpm2_policyauthorized
+
+In a trial session
+
+tpm2_policyauthorize -S session.ctx -L authorized.policy -n signing_key.name
+
+## IBM Examples:
+
+We have first the comand TPM_CC_PolicyAuthorize = 0x0000016a
+
+Then we have the key name keySign = 0x000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+
+
+digest_1 = sha256(Oldpolicy | command | keySign)
+
+digest_1 = sha256(00000000000000000000000000000000000000000000000000000000000000000000016a000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799)
+
+-now we do a second hash:
+
+Digest_final = sha256(digest_1);
