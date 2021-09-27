@@ -52,7 +52,7 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
     printf("element size error!");
   }
   {
-    json_object *json, *status, *PuK;
+    json_object *json, *status, *PuK_credential;
     enum json_tokener_error jerr = json_tokener_error_depth;
 
     json = json_tokener_parse_verbose((char *) ptr, &jerr);
@@ -67,16 +67,16 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
     status = json_object_object_get(json, "status");
     if (status != NULL) {
       if (!strcmp(json_object_get_string(status), "ok")) {
-        PuK = json_object_object_get(json, "data");
-        if (PuK != NULL && json_object_is_type(PuK, json_type_string)) {
-          const char *str = json_object_get_string(PuK);
+        PuK_credential = json_object_object_get(json, "data");
+        if (PuK_credential != NULL && json_object_is_type(PuK_credential, json_type_string)) {
+          const char *str = json_object_get_string(PuK_credential);
           if (*str != '\0')
-              printf("Server Public key: %s\n", str);
+              printf("Server Public key encrypted: %s\n", str);
                 FILE *fd = NULL;
-                if ((fd = fopen("./PuK.pem", "wb")) != NULL) {
+                if ((fd = fopen("./PuK.credential", "wb")) != NULL) {
                   fwrite(str, strlen(str), 1, fd);
                   fclose(fd);
-                  printf("written to ./PuK.pem\n");
+                  printf("written to ./PuK_credential\n");
           }
         }
       }
