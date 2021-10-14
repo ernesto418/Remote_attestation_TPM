@@ -104,9 +104,8 @@ cleanup:
 int main (void)
 {
     const char *secret_path = NULL;
-        const char *secret_path_2 = NULL;
     const char *ciphertext_path = NULL;
-        const char *iv_v = NULL;
+    const char *iv_v = NULL;
         config_t cfg;
     
     
@@ -114,7 +113,6 @@ int main (void)
     char *to_decode_key = NULL;
     config_t *cf = NULL;
     unsigned char *key = NULL;
-    unsigned char *key_2 = NULL;
     unsigned char *iv_encoded = NULL;
     unsigned char *iv = NULL;
     unsigned char *ciphertext;
@@ -134,7 +132,7 @@ int main (void)
     /**
    * Read key in bin
    */
-  if (!config_lookup_string(cf, "KCV.file_secretkey_2", &secret_path_2)) {
+  if (!config_lookup_string(cf, "KCV.file_secretkey", &secret_path)) {
     printf("file_secretkey is not defined\n");
     goto exit;
   }
@@ -143,11 +141,11 @@ int main (void)
   
     {
     FILE *fd = NULL;
-    if ((fd = fopen(secret_path_2, "rb")) != NULL) {
+    if ((fd = fopen(secret_path, "rb")) != NULL) {
       size_t sz = 0;
-      key_2 = fMalloc(fd, &sz);
-      printf("ciphertext in base64 size: %d Bytes\n",sz);
-      fread(key_2, sizeof(char), sz, fd);
+      key = fMalloc(fd, &sz);
+      printf("Key size: %d Bytes\n",sz);
+      fread(key, sizeof(char), sz, fd);
       fclose(fd);
       //printf("%s\n", template);
     } else {
@@ -246,10 +244,10 @@ int main (void)
 
 
         for (int i=0; i <32 ;i++){
-        printf("%x", *(key_2+i));
+        printf("%x", *(key+i));
     }
     printf("\n");
-    decryptedtext_len = decrypt(ciphertext, len_ciphertext, key_2, iv,
+    decryptedtext_len = decrypt(ciphertext, len_ciphertext, key, iv,
                                 decryptedtext);
 
     /* Add a NULL terminator. We are expecting printable text */

@@ -65,7 +65,7 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
     printf("element size error!");
   }
   {
-    json_object *json, *status, *AESkey_credential, *data, *AuthPuK_encrypted ;
+    json_object *json, *status, *data;
     enum json_tokener_error jerr = json_tokener_error_depth;
 
     json = json_tokener_parse_verbose((char *) ptr, &jerr);
@@ -81,40 +81,20 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
     if (status != NULL) {
       if (!strcmp(json_object_get_string(status), "ok")) {
         data = json_object_object_get(json, "data");
-          if (data != NULL) {
-          AESkey_credential = json_object_object_get(data, "aeskey_credential");
-          AuthPuK_encrypted = json_object_object_get(data, "authPuK_encrypted");
-          if ( AESkey_credential != NULL && json_object_is_type(AESkey_credential, json_type_string)) {
-            const char *str = json_object_get_string(AESkey_credential);
+          if ( data != NULL && json_object_is_type(data, json_type_string)) {
+            const char *str = json_object_get_string(data);
                   FILE *fd = NULL;
-                  if ((fd = fopen("./AESkey.credential", "wb")) != NULL) {
-                    unsigned char* bArray = hexstr_to_char(str);
-                    fwrite(bArray, strlen(str)/2, 1, fd);
-                    free(bArray);
-                    fclose(fd);
-                    printf("written to ./AESkey.credential\n");
-            }
-          } else {
-            printf("AESkey.credential= null or AESkey.credential is not string\n");
-          }
-            if ( AuthPuK_encrypted != NULL && json_object_is_type(AuthPuK_encrypted, json_type_string)) {
-            const char *str = json_object_get_string(AuthPuK_encrypted);
-            if (*str != '\0')
-                printf("AuthPuK_ecrypted encrypted: %s\n", str);
-                  FILE *fd = NULL;
-                  if ((fd = fopen("./AuthPuK_encrypted.b64", "wb")) != NULL) {
-                    //unsigned char* bArray = hexstr_to_char(str);
+                  if ((fd = fopen("../certificates/CA_SeKcert.pem", "wb")) != NULL) {
                     fwrite(str, strlen(str), 1, fd);
                     fclose(fd);
-                    printf("written to ./AuthPuK_encrypted.b64\n");
+                    printf("written to ../certificates/CA_SeKcert.pem\n");
             }
           } else {
-            printf("AuthPuK_encrypted.b64= null or AuthPuK_encrypted.b64 is not string\n");
+            printf("data = null or data is not string\n");
           }
-        }
       }
       else {
-        printf("status no ok\n");
+        printf("status no ok: \n %s",json_object_to_json_string(json));
       }
     } else {
       printf("status = null\n");
@@ -138,11 +118,10 @@ int main(void)
   CURLcode res;
   const char *server = NULL;
   const char *username = NULL;
-  const char *password = NULL;
-  const char *ekcrt_path = NULL;
-  const char *akpub_path = NULL;
-  const char *pcrs_path = NULL;
-  const char *template_path = NULL;
+  const char *SeKpub_path = NULL;
+  const char *SeKcert_path = NULL;
+  const char *certSig_path = NULL;
+
   json_object *intArray = NULL, *strArray = NULL;
   config_t cfg;
   const config_setting_t *c1 = NULL;
@@ -153,10 +132,9 @@ int main(void)
   // To be freed on exit
   CURL *curl = NULL;
   config_t *cf = NULL;
-  char *template = NULL;
-  char *ekCrt = NULL;
-  char *akPub = NULL;
-  char *pcrs = NULL;
+  char *SeKcert = NULL;
+  char *SeKPub = NULL;
+  char *certSig = NULL;
   json_object *json = NULL;
   struct curl_slist *headers = NULL;
 
@@ -178,125 +156,89 @@ int main(void)
     goto exit;
   }
 
-  if (!config_lookup_string(cf, "auth.password", &password)) {
-    printf("password is not defined\n");
+
+
+
+  /**
+   * Read Sealed key certificate
+   */
+  if (!config_lookup_string(cf, "KCV.file_SeKcert", &SeKcert_path)) {
+    printf("SeKcert_path is not defined\n");
     goto exit;
   }
 
-  /**
-   * Read PCRs selection
-   */
-  c1 = config_lookup(cf, "attune.sha1pcrs");
-  c2 = config_lookup(cf, "attune.sha2pcrs");
-  pcrs_sha1 = config_setting_length(c1);
-  pcrs_sha2 = config_setting_length(c2);
-  if ((pcrs_sha1 == 0 && pcrs_sha2 == 0) ||
-      (pcrs_sha1 < 0 && pcrs_sha1 > 23) ||
-      (pcrs_sha2 < 0 && pcrs_sha2 > 23)) {
-    printf("invalid sha1pcrs/sha2pcrs\n");
-    goto exit;
+  {
+    FILE *fd = NULL;
+    if ((fd = fopen(SeKcert_path, "rb")) != NULL) {
+      size_t sz = 0;
+      char *buf = fMalloc(fd, &sz);
+      printf("Sealed key certificate size: %d Bytes\n",sz);
+      fread(buf, sizeof(char), sz, fd);
+      fclose(fd);
+      SeKcert = fByteAry2HexStr(buf, sz);
+      free(buf);
+      //printf("%s\n", SeKcert);
+    } else {
+      printf("Sealed key certificate file not found\n");
+      goto exit;
+    }
   }
 
+
   /**
-   * Read binary_runtime_measure 
+   * Certificate's signature 
    */
-  if (!config_lookup_string(cf, "attune.file_imaTemplate", &template_path)) {
+  if (!config_lookup_string(cf, "KCV.file_certSig", &certSig_path)) {
     printf("file_imaTemplate is not defined\n");
     goto exit;
   }
 
   {
     FILE *fd = NULL;
-    if ((fd = fopen(template_path, "rb")) != NULL) {
+    if ((fd = fopen(certSig_path, "rb")) != NULL) {
       size_t sz = 0;
       char *buf = fMalloc(fd, &sz);
-      printf("IMA template size: %d Bytes\n",sz);
+      printf("Certificate's signature of SeK size: %d Bytes\n",sz);
       fread(buf, sizeof(char), sz, fd);
       fclose(fd);
-      template = fByteAry2HexStr(buf, sz);
+      certSig = fByteAry2HexStr(buf, sz);
       free(buf);
       //printf("%s\n", template);
     } else {
-      printf("IMA template file (binary_runtime_measure) not found\n");
+      printf("Certificate's signature file %s not found\n",certSig_path);
       goto exit;
     }
   }
 
+
+
+
   /**
-   * Read EK certificate
+   * Read Sek public key
    */
-  if (!config_lookup_string(cf, "attune.file_ekCrt", &ekcrt_path)) {
-    printf("file_ekCrt is not defined\n");
+  if (!config_lookup_string(cf, "KCV.file_Sekpub", &SeKpub_path)) {
+    printf("file_Sekpub is not defined\n");
     goto exit;
   }
 
   {
     FILE *fd = NULL;
-    if ((fd = fopen(ekcrt_path, "rb")) != NULL) {
+    if ((fd = fopen(SeKpub_path, "rb")) != NULL) {
       size_t sz = 0;
       char *buf = fMalloc(fd, &sz);
-      printf("EK certificate size: %d Bytes\n",sz);
+      printf("SeK public key size: %d Bytes\n",sz);
       fread(buf, sizeof(char), sz, fd);
       fclose(fd);
-      ekCrt = fByteAry2HexStr(buf, sz);
+      SeKPub = fByteAry2HexStr(buf, sz);
       free(buf);
-      //printf("%s\n", ekCrt);
+      //printf("%s\n", SeKPub);
     } else {
-      printf("EK certificate file not found\n");
+      printf("SeK public key file not found\n");
       goto exit;
     }
   }
 
-  /**
-   * Read AK public key
-   */
-  if (!config_lookup_string(cf, "attune.file_akPub", &akpub_path)) {
-    printf("file_akPub is not defined\n");
-    goto exit;
-  }
 
-  {
-    FILE *fd = NULL;
-    if ((fd = fopen(akpub_path, "rb")) != NULL) {
-      size_t sz = 0;
-      char *buf = fMalloc(fd, &sz);
-      printf("AK public key size: %d Bytes\n",sz);
-      fread(buf, sizeof(char), sz, fd);
-      fclose(fd);
-      akPub = fByteAry2HexStr(buf, sz);
-      free(buf);
-      //printf("%s\n", akPub);
-    } else {
-      printf("AK public key file not found\n");
-      goto exit;
-    }
-  }
-
-  /**
-   * Read PCRs value
-   */ 
-  if (!config_lookup_string(cf, "attune.file_pcrs", &pcrs_path)) {
-    printf("file_pcrs is not defined\n");
-    goto exit;
-  }
-
-  {
-    FILE *fd = NULL;
-    if ((fd = fopen(pcrs_path, "rb")) != NULL) {
-      size_t sz = 0;
-      pcrs = fMalloc(fd, &sz);
-      fread(pcrs, sizeof(char), sz, fd);
-      fclose(fd);
-      if (sz != 1248) { // SHA1 bank (20B x 24) + SHA256 bank (32B x 24) = 1248
-        printf("Invalid PCRs file format\n");
-        goto exit;
-      }
-      printf("PCRs size: %d\n",sz);
-    } else {
-      printf("PCRs file not found\n");
-      goto exit;
-    }
-  }
 
   /**
    * Build JSON
@@ -305,10 +247,10 @@ int main(void)
   if(curl) {
     char *url = NULL;
 
-    url = malloc(strlen("/atelic") + strlen(server) + 1);
+    url = malloc(strlen("/kcv") + strlen(server) + 1);
     url[0] = '\0';
     strcat(url, server);
-    strcat(url,"/attune");
+    strcat(url,"/kcv");
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -326,44 +268,11 @@ int main(void)
 
     json = json_object_new_object();
     json_object_object_add(json, "username", json_object_new_string(username));
-    json_object_object_add(json, "password", json_object_new_string(password));
-    json_object_object_add(json, "ekCrt", json_object_new_string(ekCrt));
-    json_object_object_add(json, "akPub", json_object_new_string(akPub));
-    json_object_object_add(json, "imaTemplate", json_object_new_string(template));
-    { // PCR banks
-      strArray = json_object_new_array();
-      { // SHA1 PCR bank
-        size_t i = 0;
-        intArray = json_object_new_array();
-        for (; i < pcrs_sha1; i++) {
-          int index = config_setting_get_int_elem(c1, i);
-          int offset = index*20;
-          char *hexStr = NULL; // 40 chars + endline
+    json_object_object_add(json, "seKcert", json_object_new_string(SeKcert));
+    json_object_object_add(json, "certsig", json_object_new_string(certSig));
+    json_object_object_add(json, "seKPub", json_object_new_string(SeKPub));
 
-          hexStr = fByteAry2HexStr((char *)(pcrs + offset), 20);
-          json_object_array_add(strArray, json_object_new_string(hexStr));
-          free(hexStr);
-          json_object_array_add(intArray, json_object_new_int(index));
-        }
-        json_object_object_add(json, "sha1Bank", intArray);
-      }
-      { // SHA256 PCR bank
-        size_t i = 0;
-        intArray = json_object_new_array();
-        for (; i < pcrs_sha2; i++) {
-          int index = config_setting_get_int_elem(c2, i);
-          int offset = (24*20)+(index*32);
-          char *hexStr = NULL; // 64 chars + endline
-        
-          hexStr = fByteAry2HexStr((char *)(pcrs + offset), 32);
-          json_object_array_add(strArray, json_object_new_string(hexStr));
-          free(hexStr);
-          json_object_array_add(intArray, json_object_new_int(index));
-        }
-        json_object_object_add(json, "sha256Bank", intArray);
-      }
-      json_object_object_add(json, "pcrs", strArray);
-    }
+
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_object_to_json_string(json));
     // Do not verify SSL server cert since we will be using self-sign cert for localhost
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
@@ -379,10 +288,9 @@ exit:
   if (cf != NULL) config_destroy(cf);
   if (json != NULL) json_object_put(json);
   if (headers != NULL) curl_slist_free_all(headers);
-  if (ekCrt != NULL) free(ekCrt);
-  if (akPub != NULL) free(akPub);
-  if (pcrs != NULL) free(pcrs);
-  if (template != NULL) free(template);
+  if (SeKcert != NULL) free(SeKcert);
+  if (certSig != NULL) free(certSig);
+  if (SeKPub != NULL) free(SeKPub);
 
   return 0;
 }

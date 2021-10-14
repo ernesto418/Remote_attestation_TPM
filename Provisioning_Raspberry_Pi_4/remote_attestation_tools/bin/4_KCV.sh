@@ -34,18 +34,18 @@ tpm2_policyauthorize -S session.ctx -L authorized.policy -n auth.name
 tpm2_flushcontext session.ctx
 echo
 #We create the ECC key pair under the authorization policy in the owner hierarchy
-echo Generating primary key in owner hierarchy
-tpm2_createprimary -c end_user.ctx -C o 
+#echo Generating primary key in owner hierarchy
+#tpm2_createprimary -c end_user.ctx -C o 
 
 echo Creating and loading ECC-256 key pair under the authorization policy "(Sealed Key)"
-tpm2_create -C end_user.ctx -G ecc256  -u SeK.pub -r Sek.priv -L authorized.policy -c Sek.ctx 
+tpm2_create -C end_user.ctx -G ecc256  -u SeK.pub -r SeK.priv -L authorized.policy -c SeK.ctx 
 echo
 #Certify the correct characteritics of Sealed key throught the atetstation key
 echo Certifying key
-tpm2_certify -C 0x81000002 -c Sek.ctx  -g sha256 -o attest.out -s sig.out
+tpm2_certify -C 0x81000002 -c SeK.ctx  -g sha256 -o SeKcert.out -s certSig.out
 
 echo Sealed key certified":"
-echo Attest: attest.out
-echo Signature: sig.out
+echo Attest: SeKcert.out
+echo Signature: certSig.out
 # Send SeK public key
-#./KCV
+./KCV
