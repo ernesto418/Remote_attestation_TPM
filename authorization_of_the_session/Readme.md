@@ -68,6 +68,33 @@ tpm2_verifysignature -c rsa.ctx -g sha256 -s sig.rssa -m message.dat
 
 tpm2_flushcontext session.ctx
 
+# Con los valores de los archivos de bin
+
+echo "my message" > message.dat
+
+reset=$(tpm2_readclock | grep  reset_count: | grep -o  '[0-9]*')
+
+tpm2_startauthsession -S session.ctx
+
+tpm2_policycountertimer -S session.ctx resets=$reset -L reset_cout.policy
+
+tpm2_flushcontext session.ctx
+
+tpm2_verifysignature -c auth.ctx -g sha256 -m reset_cout.policy -s authorization_signature -t verification.tkt -f rsassa
+
+tpm2_startauthsession --policy-session -S session.ctx
+
+tpm2_policycountertimer -S session.ctx resets=$reset
+
+tpm2_policyauthorize -S session.ctx -L authorized.policy -i reset_cout.policy -n auth.name -t verification.tkt
+
+tpm2_sign -p"session:session.ctx" -c SeK.ctx -g sha256 -o sig.SeK message.dat
+
+tpm2_verifysignature -c SeK.ctx -g sha256 -s sig.SeK -m message.dat
+
+tpm2_flushcontext session.ctx
+
+
 
 # Creamos el digest tpm2_policycountertimer
 uint32: operandB
