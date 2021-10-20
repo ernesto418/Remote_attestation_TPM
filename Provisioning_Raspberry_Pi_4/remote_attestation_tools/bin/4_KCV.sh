@@ -39,6 +39,9 @@ echo
 
 echo Creating and loading ECC-256 key pair under the authorization policy "(Sealed Key)"
 tpm2_create -C end_user.ctx -G ecc256  -u SeK.pub -r SeK.priv -L authorized.policy -c SeK.ctx 
+#echo Warning!!: Debug mode, not actually sealed key
+#tpm2_create -C end_user.ctx -G ecc256  -u SeK.pub -r SeK.priv -c SeK.ctx
+
 echo
 #Certify the correct characteritics of Sealed key throught the atetstation key
 echo Certifying key

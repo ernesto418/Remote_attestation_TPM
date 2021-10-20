@@ -86,14 +86,14 @@ static size_t fRespBody(void *ptr, size_t size, size_t nmemb, void *stream) {
             unsigned char *str_byte = hexstr_to_char(str);
                   FILE *fd = NULL;
 
-                if ((fd = fopen("../certificates/ucsr.bin", "wb")) != NULL) {
+                if ((fd = fopen("../certificates/csr.bin", "wb")) != NULL) {
                     fwrite(str_byte, strlen(str)/2, 1, fd);
                     fclose(fd);
-                    printf("written to ../certificates/ucsr.bin\n");
+                    printf("written to ../certificates/csr.bin\n");
             } else {
             printf("could not open file \n %s",json_object_to_json_string(json));}
           } else {
-            printf("data = null or data is not string\n");
+            printf("data = null or data is not string\n %s",json_object_to_json_string(json));
           }
       }
       else {
@@ -121,9 +121,8 @@ int main(void)
   CURLcode res;
   const char *server = NULL;
   const char *username = NULL;
-  const char *SeKpub_path = NULL;
-  const char *SeKcert_path = NULL;
-  const char *certSig_path = NULL;
+  const char *signature_path = NULL;
+
 
   json_object *intArray = NULL, *strArray = NULL;
   config_t cfg;
@@ -135,9 +134,8 @@ int main(void)
   // To be freed on exit
   CURL *curl = NULL;
   config_t *cf = NULL;
-  char *SeKcert = NULL;
-  char *SeKPub = NULL;
-  char *certSig = NULL;
+  char *signature = NULL;
+
   json_object *json = NULL;
   struct curl_slist *headers = NULL;
 
@@ -162,81 +160,34 @@ int main(void)
 
 
 
-  /**
-   * Read Sealed key certificate
-   */
-  if (!config_lookup_string(cf, "KCV.file_SeKcert", &SeKcert_path)) {
-    printf("SeKcert_path is not defined\n");
-    goto exit;
-  }
-
-  {
-    FILE *fd = NULL;
-    if ((fd = fopen(SeKcert_path, "rb")) != NULL) {
-      size_t sz = 0;
-      char *buf = fMalloc(fd, &sz);
-      printf("Sealed key certificate size: %d Bytes\n",sz);
-      fread(buf, sizeof(char), sz, fd);
-      fclose(fd);
-      SeKcert = fByteAry2HexStr(buf, sz);
-      free(buf);
-      //printf("%s\n", SeKcert);
-    } else {
-      printf("Sealed key certificate file not found\n");
-      goto exit;
-    }
-  }
 
 
-  /**
-   * Certificate's signature 
-   */
-  if (!config_lookup_string(cf, "KCV.file_certSig", &certSig_path)) {
-    printf("file_imaTemplate is not defined\n");
-    goto exit;
-  }
 
-  {
-    FILE *fd = NULL;
-    if ((fd = fopen(certSig_path, "rb")) != NULL) {
-      size_t sz = 0;
-      char *buf = fMalloc(fd, &sz);
-      printf("Certificate's signature of SeK size: %d Bytes\n",sz);
-      fread(buf, sizeof(char), sz, fd);
-      fclose(fd);
-      certSig = fByteAry2HexStr(buf, sz);
-      free(buf);
-      //printf("%s\n", template);
-    } else {
-      printf("Certificate's signature file %s not found\n",certSig_path);
-      goto exit;
-    }
-  }
 
 
 
 
   /**
-   * Read Sek public key
+   * Read Signature of Ucsr
    */
-  if (!config_lookup_string(cf, "KCV.file_Sekpub", &SeKpub_path)) {
-    printf("file_Sekpub is not defined\n");
+  if (!config_lookup_string(cf, "CSR.file_signature", &signature_path)) {
+    printf("file_signature is not defined\n");
     goto exit;
   }
 
   {
     FILE *fd = NULL;
-    if ((fd = fopen(SeKpub_path, "rb")) != NULL) {
+    if ((fd = fopen(signature_path, "rb")) != NULL) {
       size_t sz = 0;
       char *buf = fMalloc(fd, &sz);
-      printf("SeK public key size: %d Bytes\n",sz);
+      printf("UCSR's signature size: %d Bytes\n",sz);
       fread(buf, sizeof(char), sz, fd);
       fclose(fd);
-      SeKPub = fByteAry2HexStr(buf, sz);
+      signature = fByteAry2HexStr(buf, sz);
       free(buf);
       //printf("%s\n", SeKPub);
     } else {
-      printf("SeK public key file not found\n");
+      printf("UCSR's signature file not found\n");
       goto exit;
     }
   }
@@ -250,10 +201,10 @@ int main(void)
   if(curl) {
     char *url = NULL;
 
-    url = malloc(strlen("/kcv") + strlen(server) + 1);
+    url = malloc(strlen("/csr") + strlen(server) + 1);
     url[0] = '\0';
     strcat(url, server);
-    strcat(url,"/kcv");
+    strcat(url,"/csr");
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -271,9 +222,8 @@ int main(void)
 
     json = json_object_new_object();
     json_object_object_add(json, "username", json_object_new_string(username));
-    json_object_object_add(json, "seKcert", json_object_new_string(SeKcert));
-    json_object_object_add(json, "certsig", json_object_new_string(certSig));
-    json_object_object_add(json, "seKPub", json_object_new_string(SeKPub));
+    json_object_object_add(json, "signature", json_object_new_string(signature));
+
 
 
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_object_to_json_string(json));
@@ -291,9 +241,8 @@ exit:
   if (cf != NULL) config_destroy(cf);
   if (json != NULL) json_object_put(json);
   if (headers != NULL) curl_slist_free_all(headers);
-  if (SeKcert != NULL) free(SeKcert);
-  if (certSig != NULL) free(certSig);
-  if (SeKPub != NULL) free(SeKPub);
+  if (signature != NULL) free(signature);
+
 
   return 0;
 }
