@@ -80,7 +80,7 @@ tpm2_policycountertimer -S session.ctx resets=$reset -L reset_cout.policy
 
 tpm2_flushcontext session.ctx
 
-tpm2_verifysignature -c auth.ctx -g sha256 -m reset_cout.policy -s authorization_signature -t verification.tkt -f rsassa
+tpm2_verifysignature -c auth.ctx -g sha256 -m reset_cout.policy -s auth_sign_bin -t verification.tkt -f rsassa
 
 tpm2_startauthsession --policy-session -S session.ctx
 
