@@ -153,3 +153,19 @@ digest_1 = sha256(00000000000000000000000000000000000000000000000000000000000000
 -now we do a second hash:
 
 Digest_final = sha256(digest_1);
+
+# Creamos el digest tpm2_PolicyPCR
+
+We have first the comand TPM_CC_PolicyPCR = 0x0000017F
+
+Then we have our PCR value = 0xEB6F87E41B32FFA95AEFC3C6CADC4183FCFFCD60CF169AA98FB9D8D7B7B0626C
+
+And finally, the Selected PCR array (array that reflect the selected PCR), it is a some complex system, but the important is that for PCR 10, the array is = 0x00000001000b03000400
+
+Digest_1 = sha256(PCR value)
+
+Digest_1 = sha256(EB6F87E41B32FFA95AEFC3C6CADC4183FCFFCD60CF169AA98FB9D8D7B7B0626C)
+
+Diges_2 = sha256(Last_policy_digest||TPM_CC_PolicyPCR||Selected PCR array||Digest_1)
+
+Diges_2 = sha256(L0000000000000000000000000000000000000000000000000000000000000000||0000017F||00000001000b03000400||8aff56b22cf2037433349f6619d7351784ac1fe896a573613f272e7109145c98)
