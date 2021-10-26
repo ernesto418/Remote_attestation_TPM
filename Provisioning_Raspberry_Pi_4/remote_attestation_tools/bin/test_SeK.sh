@@ -2,7 +2,10 @@
 
 echo "my message" > message.dat
 reset=$(tpm2_readclock | grep reset_count: | grep -o '[0-9]*')
-
+#Loading keys
+tpm2_loadexternal -G rsa -C o -u AuthPuK.pem -c auth.ctx -n auth.name
+tpm2_createprimary -c end_user.ctx -C o
+tpm2_load -C end_user.ctx  -u SeK.pub -r SeK.priv -c SeK.ctx
 # generating tpm2_Policypcr and tpm2_policycountertimer digest
 
 tpm2_startauthsession -S session.ctx --hash-algorithm="sha256"
@@ -16,8 +19,8 @@ tpm2_flushcontext session.ctx
 echo "verifying signature"
 tpm2_verifysignature -c auth.ctx -g sha256 -m pcrreset_policy.digest -s auth_sign_bin -t verification.tkt -f rsassa
 
-# Start session
 
+# Start session
 tpm2_startauthsession --policy-session -S session.ctx --hash-algorithm="sha256"
 
 # Generate current policypcr and policyreset (Real!!)
