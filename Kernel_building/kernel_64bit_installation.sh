@@ -32,9 +32,9 @@ export PATH=$PATH:~/tools/arm-bcm2708/arm-linux-gnueabihf/bin
 KERNEL=kernel8
 
 #Download kernel
-set  +e
+set +e
 sudo rm -r linux
-set-e
+set -e
 sudo curl -L https://github.com/raspberrypi/linux/archive/06606627043f72d22881563d485268fec2acd56d.zip --output linux.zip
 unzip linux.zip && mv linux-06606627043f72d22881563d485268fec2acd56d linux
 
@@ -44,9 +44,9 @@ echo "----------------------------------- First installation -------------------
 
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bcm2711_defconfig
 make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image modules dtbs
-set  +e
+set +e
 sudo rm -r mnt
-set-e
+set -e
 mkdir mnt
 mkdir mnt/fat32
 mkdir mnt/ext4
