@@ -8,11 +8,16 @@ sudo umount /dev/$RNAME
 set -e
 #Check the correct state of the sd card
 echo "Testing SD card state"
+set +e
+sudo rm -r mnt_test
+set -e
 mkdir mnt_test
 mkdir mnt_test/fat32
 mkdir mnt_test/ext4
 sudo mount /dev/$BNAME mnt_test/fat32
+sleep 1
 sudo mount /dev/$RNAME mnt_test/ext4
+sleep 2
 sudo umount /dev/$BNAME
 sudo umount /dev/$RNAME
 sudo rm -r mnt_test
@@ -25,9 +30,11 @@ export PATH=$PATH:~/tools/arm-bcm2708/arm-linux-gnueabihf/bin
 KERNEL=kernel7l
 
 #Download kernel
-git clone -b rpi-4.19.y https://github.com/raspberrypi/linux
-cd linux
-git checkout 06606627043f72d22881563d485268fec2acd56d
+set  +e
+sudo rm -r linux
+set-e
+sudo curl -L https://github.com/raspberrypi/linux/archive/06606627043f72d22881563d485268fec2acd56d.zip --output linux.zip
+unzip linux.zip && mv linux-06606627043f72d22881563d485268fec2acd56d linux
 
 #First installation
 
