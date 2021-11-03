@@ -90,4 +90,6 @@ This remote attestation is set for measuring just the actions of the root user, 
 1. comment line 57 of [kernel instalation](https://github.com/ernesto418/Remote_attestation_TPM/blob/V1/Kernel_building/kernel_64bit_installation.sh)
 2. uncomment line 56 of [kernel instalation](https://github.com/ernesto418/Remote_attestation_TPM/blob/V1/Kernel_building/kernel_64bit_installation.sh)
 
-In some models of Raspberry Pi 4, the reboot is not enough to produce a reset in the TPM module. It is still a mystery to be investigated.
+In some models of Raspberry Pi 4, the reboot is not enough to produce a reset in the TPM module. It is still a mystery to be investigated. Two possible solutions:
+1. Hardreset the TPM while rebooting the Raspberry pi.
+2. Shutdown and start the Raspberry pi.
