@@ -35,8 +35,8 @@ KERNEL=kernel8
 set +e
 sudo rm -r linux
 set -e
-sudo curl -L https://github.com/raspberrypi/linux/archive/06606627043f72d22881563d485268fec2acd56d.zip --output linux.zip
-unzip linux.zip && mv linux-06606627043f72d22881563d485268fec2acd56d linux
+sudo curl -L https://github.com/raspberrypi/linux/archive/971a2bb14b459819db1bda8fcdf953e493242b42.zip --output linux.zip
+unzip linux.zip && mv linux-971a2bb14b459819db1bda8fcdf953e493242b42 linux
 
 cd linux
 #First installation
@@ -64,10 +64,10 @@ sudo umount mnt/fat32
 sudo umount mnt/ext4
 
 #Adding parchs
-echo "----------------------------------- Parching -----------------------------------------------"
-sudo cp ../parch_64/clk-bcm2835.c drivers/clk/bcm/clk-bcm2835.c
-sudo cp ../parch_64/.config .config
-sudo cp ../parch_64/ima_policy.c security/integrity/ima/ima_policy.c
+ echo "----------------------------------- Parching -----------------------------------------------"
+sudo cp ../parch_64_v5/clk-bcm2835.c drivers/clk/bcm/clk-bcm2835.c
+sudo cp ../parch_64_v5/.config .config
+sudo cp ../parch_64_v5/ima_policy.c security/integrity/ima/ima_policy.c
 
 #Second installation
 echo "----------------------------------- Second installation -----------------------------------------------"
