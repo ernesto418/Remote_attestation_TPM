@@ -46,7 +46,7 @@ set +e
 git clone https://github.com/tpm2-software/tpm2-tools.git
 set -e
 cd tpm2-tools
-#git checkout 4.2
+git checkout 4.2
 ./bootstrap
 ./configure
 make -j$(nproc)
