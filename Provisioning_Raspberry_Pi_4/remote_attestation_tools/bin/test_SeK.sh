@@ -4,7 +4,7 @@ echo "my message" > message.dat
 reset=$(tpm2_readclock | grep reset_count: | grep -o '[0-9]*')
 #Loading keys
 tpm2_loadexternal -G rsa -C o -u AuthPuK.pem -c auth.ctx -n auth.name
-tpm2_createprimary -c end_user.ctx -C o
+tpm2_createprimary -c end_user.ctx -C o -G ecc256
 tpm2_load -C end_user.ctx  -u SeK.pub -r SeK.priv -c SeK.ctx
 # generating tpm2_Policypcr and tpm2_policycountertimer digest
 
