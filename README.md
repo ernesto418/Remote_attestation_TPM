@@ -47,6 +47,11 @@ Then go to ~/tools/remote_attestation_tool/bin/measuring_attestations_v2.sh and 
 
 2. When the Raspberrry pi start, execute all the programs you would like your IoT node to use in the real application (Real application program).
 
+```
+./test_SeK.sh
+```
+
+
 3. Execute the attestation (it will return several errors, but it has to be executed to include some needed programs in the reference measurement list):
 
 ```
