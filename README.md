@@ -18,6 +18,28 @@ kernel_64bit_installation.sh sda1 sda2
 
 ## Provisioning Raspberry Pi.
 
+### Blockchain configuration
+
+#### DNS
+
+Add to /etc/hosts:
+
+```
+peer0.org1.example.com
+ca.org1.example.com
+peer0.org2.example.com
+orderer.example.com
+```
+
+#### Certificates
+
+Modifiy the certificates in: 
+
+- test-network/organizations/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+- test-network/organizations/peerOrganizations/org1.example.com/connection-org1.yaml
+
+#### Other provisioning
+
 First, we have to configure some internal files of the Raspberry Pi and install the needed dependencies:
 
 ```
